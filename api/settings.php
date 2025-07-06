@@ -39,6 +39,56 @@ function get_settings($settings_file, $defaults_file) {
     return []; // Return empty array if no file found
 }
 
+/**
+ * Cleans up files in the uploads directory that are no longer referenced in the settings.
+ * @param array $newSettings The newly saved settings configuration.
+ */
+function cleanup_unused_uploads($newSettings) {
+    $upload_dir = __DIR__ . '/../uploads/';
+    if (!is_dir($upload_dir)) {
+        return; // No directory to clean
+    }
+
+    // 1. Collect all used file paths from settings
+    $used_files = [];
+    $keys_to_check = ['logo', 'headerBackground', 'mainBackground'];
+    foreach ($keys_to_check as $key) {
+        if (isset($newSettings[$key]['value']) && !empty($newSettings[$key]['value'])) {
+            // Only consider files in the 'uploads/' directory
+            if (strpos($newSettings[$key]['value'], 'uploads/') === 0) {
+                $used_files[] = basename($newSettings[$key]['value']);
+            }
+        }
+    }
+
+    if (isset($newSettings['contentRotation']['sequence'])) {
+        foreach ($newSettings['contentRotation']['sequence'] as $item) {
+            if (isset($item['source']['value']) && !empty($item['source']['value'])) {
+                if (strpos($item['source']['value'], 'uploads/') === 0) {
+                    $used_files[] = basename($item['source']['value']);
+                }
+            }
+        }
+    }
+
+    // 2. Get all files currently in the uploads directory
+    // Exclude .htaccess and other non-media files if necessary
+    $actual_files = array_filter(scandir($upload_dir), function($file) {
+        return !in_array($file, ['.', '..', '.htaccess']);
+    });
+
+    // 3. Determine which files to delete
+    $files_to_delete = array_diff($actual_files, $used_files);
+
+    // 4. Delete the unused files
+    foreach ($files_to_delete as $file) {
+        $file_path = $upload_dir . $file;
+        if (is_file($file_path)) {
+            @unlink($file_path);
+        }
+    }
+}
+
 
 // --- Main Logic ---
 
@@ -73,6 +123,8 @@ if ($method === 'POST') {
     if (file_put_contents($settings_file, $encoded_data, LOCK_EX) === false) {
         send_json_response(['success' => false, 'error' => 'Failed to write settings to file. Check server permissions for the /data folder.'], 500);
     } else {
+        // Clean up unused uploaded files
+        cleanup_unused_uploads($newSettings);
         send_json_response(['success' => true, 'message' => 'Settings saved successfully.']);
     }
 }

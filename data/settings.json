@@ -1,15 +1,15 @@
 {
     "logo": {
         "type": "url",
-        "value": "uploads/media_6868211f6efc49.73782671.png"
+        "value": "uploads/media_686a7c562aea40.94438587.png"
     },
     "headerBackground": {
         "type": "url",
-        "value": "uploads/media_68682225208fd8.78544548.png"
+        "value": "uploads/media_686a6f82991c18.16275569.png"
     },
     "mainBackground": {
         "type": "url",
-        "value": "uploads/media_6868222521be55.37659766.png"
+        "value": "uploads/media_686a7e222428b0.50756350.jpg"
     },
     "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
     "interval": 30,
@@ -20,8 +20,14 @@
     "headerSubcaptionFontSize": 18,
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
+    "dashboardMargins": {
+        "top": 20,
+        "right": 150,
+        "bottom": 100,
+        "left": 150
+    },
     "showLogo": true,
-    "showHeaderBg": true,
+    "showHeaderBg": false,
     "showMainBg": true,
     "contentRotation": {
         "enabled": false,
@@ -37,7 +43,7 @@
                 "duration": 15,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_68683066af5651.04430214.mp4"
+                    "value": "uploads/media_686a6f829e4426.56897359.mp4"
                 }
             },
             {
@@ -46,24 +52,41 @@
                 "duration": 5,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_68683066ab9e04.97098542.png"
+                    "value": "uploads/media_686a6f829af684.14741333.png"
                 }
             }
         ]
     },
     "barChartStyling": {
         "barColor": "#8b5cf6",
-        "rangeTextColor": "#ffffff",
-        "labelTextColor": "#ffffff",
-        "valueTextColor": "#ffffff",
-        "unitTextColor": "#d1d5db",
-        "rangeFontSize": 18,
-        "labelFontSize": 18,
-        "valueFontSize": 18,
-        "unitFontSize": 18
+        "rangeTextColor": "#000000",
+        "labelTextColor": "#000000",
+        "valueTextColor": "#000000",
+        "unitTextColor": "#000000",
+        "rangeFontSize": 24,
+        "labelFontSize": 24,
+        "valueFontSize": 24,
+        "unitFontSize": 24
     },
     "modeStatusKey": "operation_mode",
-    "operationModes": [],
+    "operationModes": [
+    {
+        "name": "MEASURING",
+        "value": "1"
+    },
+    {
+        "name": "CALIBRATION",
+        "value": "2"
+    },
+    {
+        "name": "DRAIN",
+        "value": "3"
+    },
+    {
+        "name": "NORMAL",
+        "value": "4"
+    }
+],
     "params": [
         {
             "displayName": "Suspended Solids",

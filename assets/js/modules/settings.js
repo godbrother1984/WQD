@@ -19,6 +19,10 @@ export const settings = {
         mainBgColorInput: document.getElementById('settings-main-bg-color'),
         headerCaptionFontsizeInput: document.getElementById('settings-header-caption-fontsize'),
         headerSubcaptionFontsizeInput: document.getElementById('settings-header-subcaption-fontsize'),
+        marginTopInput: document.getElementById('settings-margin-top'),
+        marginRightInput: document.getElementById('settings-margin-right'),
+        marginBottomInput: document.getElementById('settings-margin-bottom'),
+        marginLeftInput: document.getElementById('settings-margin-left'),
         showLogoCheckbox: document.getElementById('settings-show-logo'),
         logoPickerContainer: document.getElementById('logo-picker-container'),
         headerBgPickerContainer: document.getElementById('header-bg-picker-container'),
@@ -28,13 +32,17 @@ export const settings = {
         rotationEnabledCheckbox: document.getElementById('settings-rotation-enabled'),
         rotationList: document.getElementById('settings-rotation-list'),
         barColorInput: document.getElementById('settings-bar-color'),
+        gridColorInput: document.getElementById('settings-grid-color'),
+        gridWidthInput: document.getElementById('settings-grid-width'),
         barRangeTextColorInput: document.getElementById('settings-bar-range-text-color'),
         barLabelTextColorInput: document.getElementById('settings-bar-label-text-color'),
         barValueTextColorInput: document.getElementById('settings-bar-value-text-color'),
         barUnitTextColorInput: document.getElementById('settings-bar-unit-text-color'),
         barRangeFontSizeInput: document.getElementById('settings-bar-range-font-size'),
+        barRangeFontWeightInput: document.getElementById('settings-bar-range-font-weight'),
         barLabelFontSizeInput: document.getElementById('settings-bar-label-font-size'),
         barValueFontSizeInput: document.getElementById('settings-bar-value-font-size'),
+        barValueFontWeightInput: document.getElementById('settings-bar-value-font-weight'),
         barUnitFontSizeInput: document.getElementById('settings-bar-unit-font-size'),
         modeKeyInput: document.getElementById('settings-mode-key'),
         modeValuesContainer: document.getElementById('settings-mode-values'),
@@ -56,6 +64,7 @@ export const settings = {
         cancelRestoreBtn: document.getElementById('cancel-restore-btn'),
         changePinBtn: document.getElementById('settings-change-pin-btn'),
     },
+
     _initializeDashboardCallback: null,
 
     updateStorageEstimate() {
@@ -380,6 +389,12 @@ export const settings = {
             headerSubcaptionFontSize: parseInt(this.elements.headerSubcaptionFontsizeInput.value, 10),
             headerBackgroundColor: this.elements.headerBgColorInput.value,
             mainBackgroundColor: this.elements.mainBgColorInput.value,
+            dashboardMargins: {
+                top: parseInt(this.elements.marginTopInput.value, 10) || 0,
+                right: parseInt(this.elements.marginRightInput.value, 10) || 0,
+                bottom: parseInt(this.elements.marginBottomInput.value, 10) || 0,
+                left: parseInt(this.elements.marginLeftInput.value, 10) || 0,
+            },
             showLogo: this.elements.showLogoCheckbox.checked,
             showHeaderBg: this.elements.showHeaderBgCheckbox.checked,
             showMainBg: this.elements.showMainBgCheckbox.checked,
@@ -423,6 +438,12 @@ export const settings = {
         this.elements.headerSubcaptionFontsizeInput.value = config.headerSubcaptionFontSize || 18;
         this.elements.headerBgColorInput.value = config.headerBackgroundColor || '#1f2937';
         this.elements.mainBgColorInput.value = config.mainBackgroundColor || '#000000';
+        if (config.dashboardMargins) {
+            this.elements.marginTopInput.value = config.dashboardMargins.top;
+            this.elements.marginRightInput.value = config.dashboardMargins.right;
+            this.elements.marginBottomInput.value = config.dashboardMargins.bottom;
+            this.elements.marginLeftInput.value = config.dashboardMargins.left;
+        }
         this.elements.showLogoCheckbox.checked = config.showLogo ?? true;
         this.elements.showHeaderBgCheckbox.checked = config.showHeaderBg ?? true;
         this.elements.showMainBgCheckbox.checked = config.showMainBg ?? true;
