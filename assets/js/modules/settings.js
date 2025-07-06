@@ -32,13 +32,17 @@ export const settings = {
         rotationEnabledCheckbox: document.getElementById('settings-rotation-enabled'),
         rotationList: document.getElementById('settings-rotation-list'),
         barColorInput: document.getElementById('settings-bar-color'),
+        gridColorInput: document.getElementById('settings-grid-color'),
+        gridWidthInput: document.getElementById('settings-grid-width'),
         barRangeTextColorInput: document.getElementById('settings-bar-range-text-color'),
         barLabelTextColorInput: document.getElementById('settings-bar-label-text-color'),
         barValueTextColorInput: document.getElementById('settings-bar-value-text-color'),
         barUnitTextColorInput: document.getElementById('settings-bar-unit-text-color'),
         barRangeFontSizeInput: document.getElementById('settings-bar-range-font-size'),
+        barRangeFontWeightInput: document.getElementById('settings-bar-range-font-weight'),
         barLabelFontSizeInput: document.getElementById('settings-bar-label-font-size'),
         barValueFontSizeInput: document.getElementById('settings-bar-value-font-size'),
+        barValueFontWeightInput: document.getElementById('settings-bar-value-font-weight'),
         barUnitFontSizeInput: document.getElementById('settings-bar-unit-font-size'),
         modeKeyInput: document.getElementById('settings-mode-key'),
         modeValuesContainer: document.getElementById('settings-mode-values'),
@@ -60,6 +64,7 @@ export const settings = {
         cancelRestoreBtn: document.getElementById('cancel-restore-btn'),
         changePinBtn: document.getElementById('settings-change-pin-btn'),
     },
+
     _initializeDashboardCallback: null,
 
     updateStorageEstimate() {

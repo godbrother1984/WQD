@@ -1,7 +1,7 @@
 {
     "logo": {
         "type": "url",
-        "value": "uploads/media_686a6f829835c9.70152575.png"
+        "value": "uploads/media_686a7c562aea40.94438587.png"
     },
     "headerBackground": {
         "type": "url",
@@ -9,7 +9,7 @@
     },
     "mainBackground": {
         "type": "url",
-        "value": "uploads/media_686a6f8299ca32.76428926.png"
+        "value": "uploads/media_686a7e222428b0.50756350.jpg"
     },
     "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
     "interval": 30,
@@ -21,13 +21,13 @@
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
     "dashboardMargins": {
-        "top": 0,
-        "right": 0,
-        "bottom": 50,
-        "left": 0
+        "top": 20,
+        "right": 150,
+        "bottom": 100,
+        "left": 150
     },
     "showLogo": true,
-    "showHeaderBg": true,
+    "showHeaderBg": false,
     "showMainBg": true,
     "contentRotation": {
         "enabled": false,
@@ -59,14 +59,14 @@
     },
     "barChartStyling": {
         "barColor": "#8b5cf6",
-        "rangeTextColor": "#ffffff",
-        "labelTextColor": "#ffffff",
-        "valueTextColor": "#ffffff",
-        "unitTextColor": "#d1d5db",
-        "rangeFontSize": 18,
-        "labelFontSize": 18,
-        "valueFontSize": 18,
-        "unitFontSize": 18
+        "rangeTextColor": "#000000",
+        "labelTextColor": "#000000",
+        "valueTextColor": "#000000",
+        "unitTextColor": "#000000",
+        "rangeFontSize": 24,
+        "labelFontSize": 24,
+        "valueFontSize": 24,
+        "unitFontSize": 24
     },
     "modeStatusKey": "operation_mode",
     "operationModes": [],

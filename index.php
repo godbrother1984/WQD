@@ -8,14 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="assets/style.css">
 </head>
-<body class="bg-black text-white flex flex-col h-screen">
+<body class="bg-black text-white">
     
     <nav class="bg-gray-900 p-4 shadow-lg sticky top-0 z-40">
         <div class="container mx-auto flex justify-center items-center gap-2 sm:gap-4">
@@ -26,27 +24,30 @@
         </div>
     </nav>
 
-    <div class="flex-grow overflow-y-auto">
+    <div class="main-content-wrapper">
         <div id="view-dashboard" class="view active">
-            <div class="dashboard-overlay"></div>
+            <div class="dashboard-background-container">
+                <div class="dashboard-background-layer"></div>
+                <div class="dashboard-overlay"></div>
+            </div>
+            
             <div class="dashboard-content">
-                <div id="dashboard-ui-elements" class="flex-shrink-0">
-                    <header id="dashboard-header" class="p-4 mb-4" style="background-size: cover; background-position: center;">
-                        <div class="flex items-center gap-4 h-20">
-                            <img id="dashboard-logo" src="https://placehold.co/200x200/transparent/white?text=Logo" alt="Logo" class="h-full w-auto object-contain">
-                            <div>
-                                <h2 id="header-caption" class="text-2xl font-bold text-white"></h2>
-                                <p id="header-subcaption" class="text-lg text-gray-300"></p>
+                <div id="dashboard-ui-elements">
+                    <header id="dashboard-header">
+                        <div class="header-content">
+                            <img id="dashboard-logo" src="https://placehold.co/200x200/transparent/white?text=Logo" alt="Logo">
+                            <div class="ml-4">
+                                <h2 id="header-caption" class="font-bold text-white"></h2>
+                                <p id="header-subcaption" class="text-gray-300"></p>
                             </div>
                         </div>
                     </header>
-                     <div id="operation-mode-container" class="bg-gray-800 bg-opacity-70 p-3 rounded-lg border border-gray-600 flex justify-center items-center gap-6">
+                     <div id="operation-mode-container" class="mb-4 bg-gray-800 bg-opacity-70 p-3 rounded-lg border border-gray-600 flex justify-center items-center gap-6">
                         <h3 class="text-white font-bold">OPERATION MODE</h3>
-                        <div id="operation-mode-lights" class="flex gap-4">
-                            </div>
+                        <div id="operation-mode-lights" class="flex gap-4"></div>
                     </div>
                 </div>
-                <main class="p-4">
+                <main class="py-4">
                      <div id="dashboard-graph-content" class="dashboard-main-content active">
                          <canvas id="dashboardBarChart"></canvas>
                      </div>
@@ -59,7 +60,7 @@
                      <div id="dashboard-youtube-content" class="dashboard-main-content">
                         <iframe id="dashboard-youtube-iframe" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                      </div>
-                     <div id="dashboard-values-container" class="flex justify-around mt-2 text-white text-center flex-shrink-0"></div>
+                     <div id="dashboard-values-container" class="flex justify-around mt-2 text-white text-center"></div>
                 </main>
             </div>
         </div>
@@ -86,23 +87,18 @@
                 
                 <section class="mt-8">
                     <h2 class="text-xl font-bold mb-4">Summary (for selected time range)</h2>
-                    <div id="graph-stats-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                        </div>
+                    <div id="graph-stats-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"></div>
                 </section>
     
                 <section class="mt-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold">Data Log (latest 200 entries)</h2>
-                        <button id="export-csv-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                            Export as CSV
-                        </button>
+                        <button id="export-csv-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Export as CSV</button>
                     </div>
                     <div class="bg-gray-900 p-1 rounded-lg overflow-x-auto max-h-96">
                         <table id="history-table" class="w-full text-sm text-left text-gray-400">
-                            <thead class="text-xs text-gray-300 uppercase bg-gray-800 sticky top-0">
-                                </thead>
-                            <tbody id="history-table-body">
-                                </tbody>
+                            <thead class="text-xs text-gray-300 uppercase bg-gray-800 sticky top-0"></thead>
+                            <tbody id="history-table-body"></tbody>
                         </table>
                     </div>
                 </section>
@@ -125,8 +121,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                             Sensor Status
                         </h2>
-                        <div id="sensor-status-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            </div>
+                        <div id="sensor-status-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     </section>
     
                     <section class="bg-gray-900 p-6 rounded-xl">
@@ -277,15 +272,20 @@
                          <div class="pt-6 border-t"><h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Dashboard Bar Chart Styling<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">Fine-tune the colors and font sizes for all elements in the main dashboard bar chart.</span></span></h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label class="block text-sm font-medium mb-2">Bar Color</label><input type="color" id="settings-bar-color"></div>
+                                <div><label class="block text-sm font-medium mb-2">Grid Line Color</label><input type="color" id="settings-grid-color"></div>
                                 <div><label class="block text-sm font-medium mb-2">Range Text Color</label><input type="color" id="settings-bar-range-text-color"></div>
                                 <div><label class="block text-sm font-medium mb-2">Label Text Color</label><input type="color" id="settings-bar-label-text-color"></div>
                                 <div><label class="block text-sm font-medium mb-2">Value Text Color</label><input type="color" id="settings-bar-value-text-color"></div>
                                 <div><label class="block text-sm font-medium mb-2">Unit Text Color</label><input type="color" id="settings-bar-unit-text-color"></div>
                             </div>
                              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <div><label class="block text-sm font-medium mb-2">Grid Line Width (px)</label><input type="number" id="settings-grid-width" class="settings-input" min="0" step="0.5"></div>
+                                <div></div>
                                 <div><label class="block text-sm font-medium mb-2">Range Font Size (px)</label><input type="number" id="settings-bar-range-font-size" class="settings-input"></div>
-                                 <div><label class="block text-sm font-medium mb-2">Label Font Size (px)</label><input type="number" id="settings-bar-label-font-size" class="settings-input"></div>
+                                <div><label class="block text-sm font-medium mb-2">Range Font Weight</label><select id="settings-bar-range-font-weight" class="settings-input"><option value="normal">Normal</option><option value="bold">Bold</option></select></div>
+                                <div><label class="block text-sm font-medium mb-2">Label Font Size (px)</label><input type="number" id="settings-bar-label-font-size" class="settings-input"></div>
                                 <div><label class="block text-sm font-medium mb-2">Value Font Size (px)</label><input type="number" id="settings-bar-value-font-size" class="settings-input"></div>
+                                <div><label class="block text-sm font-medium mb-2">Value Font Weight</label><select id="settings-bar-value-font-weight" class="settings-input"><option value="normal">Normal</option><option value="bold">Bold</option></select></div>
                                 <div><label class="block text-sm font-medium mb-2">Unit Font Size (px)</label><input type="number" id="settings-bar-unit-font-size" class="settings-input"></div>
                             </div>
                         </div>
@@ -334,9 +334,8 @@
                  </div>
             </div>
         </div>
-    </div>
-    
-    <div id="unsaved-changes-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        
+    </div> <div id="unsaved-changes-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white text-gray-800 p-8 rounded-lg shadow-xl max-w-sm w-full">
             <h3 class="text-xl font-bold mb-4">Unsaved Changes</h3>
             <p class="mb-6">You have unsaved changes. Are you sure you want to leave this page?</p>
@@ -362,10 +361,10 @@
         <div class="bg-white text-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full m-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Changelog</h3>
-                <button id="close-changelog-btn" class="text-2xl font-bold text-gray-500 hover:text-gray-800">×</button>
+                <button id="close-changelog-btn" class="text-2xl font-bold text-gray-500 hover:text-gray-800">&times;</button>
             </div>
             <div id="changelog-content" class="space-y-4 text-sm max-h-80 overflow-y-auto pr-2">
-                </div>
+            </div>
             <div class="mt-6 text-center text-xs">
                 <a href="https://ilustro.co" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">
                     Powered by Ilustro.co
@@ -383,7 +382,7 @@
             </div>
             <p id="pin-error" class="text-red-500 text-sm text-center h-5 mb-4"></p>
             <div id="pin-keypad" class="grid grid-cols-3 gap-4">
-                </div>
+            </div>
              <div class="flex justify-center mt-6">
                 <button id="cancel-pin-btn" class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">Cancel</button>
             </div>
