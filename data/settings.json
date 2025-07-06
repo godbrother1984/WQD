@@ -20,11 +20,11 @@
     "headerSubcaptionFontSize": 18,
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
-    "dashboardMargins": {
-        "top": 20,
-        "right": 150,
-        "bottom": 100,
-        "left": 150
+    "dashboardPadding": {
+        "top": "10",
+        "right": "10",
+        "bottom": "10",
+        "left": "10"
     },
     "showLogo": true,
     "showHeaderBg": false,
@@ -66,27 +66,32 @@
         "rangeFontSize": 24,
         "labelFontSize": 24,
         "valueFontSize": 24,
-        "unitFontSize": 24
+        "unitFontSize": 24,
+        "gridColor": "#000000",
+        "gridLineWidth": 1,
+        "valueFontWeight": "bold",
+        "rangeFontWeight": "bold",
+        "unitFontWeight": "bold"
     },
     "modeStatusKey": "operation_mode",
     "operationModes": [
-    {
-        "name": "MEASURING",
-        "value": "1"
-    },
-    {
-        "name": "CALIBRATION",
-        "value": "2"
-    },
-    {
-        "name": "DRAIN",
-        "value": "3"
-    },
-    {
-        "name": "NORMAL",
-        "value": "4"
-    }
-],
+        {
+            "name": "MEASURING",
+            "value": "1"
+        },
+        {
+            "name": "CALIBRATION",
+            "value": "2"
+        },
+        {
+            "name": "DRAIN",
+            "value": "3"
+        },
+        {
+            "name": "NORMAL",
+            "value": "4"
+        }
+    ],
     "params": [
         {
             "displayName": "Suspended Solids",

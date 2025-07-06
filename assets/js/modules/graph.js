@@ -16,7 +16,6 @@ export const graph = {
             brushEl: document.getElementById('brush'), 
             brushContainer: document.getElementById('brush-chart-container'), 
             resetZoomBtn: document.getElementById('reset-zoom-btn'),
-            // New elements for stats and table
             statsContainer: document.getElementById('graph-stats-container'),
             historyTable: document.getElementById('history-table'),
             historyTableBody: document.getElementById('history-table-body'),
@@ -36,14 +35,28 @@ export const graph = {
     initMainChart() {
         if (!this.elements.mainChartEl) return;
         if (this.mainChart) this.mainChart.destroy();
+        
+        const currentConfig = state.getConfig();
+        const styling = currentConfig.barChartStyling || {};
+
         this.mainChart = new Chart(this.elements.mainChartEl.getContext('2d'), {
             type: 'line', data: { datasets: [] },
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 
-                    x: { type: 'time', time: { tooltipFormat: 'PPpp', displayFormats: { hour: 'HH:mm', day: 'MMM dd' } }, ticks: { color: '#9ca3af', maxRotation: 0, autoSkip: true, autoSkipPadding: 30 }, grid: { color: '#374151' } }, 
-                    y: { beginAtZero: false, ticks: { color: '#9ca3af' }, grid: { display: true, color: '#374151' } } 
+                    // --- ส่วนที่แก้ไข: ใช้ค่าจาก styling ---
+                    x: { 
+                        type: 'time', 
+                        time: { tooltipFormat: 'PPpp', displayFormats: { hour: 'HH:mm', day: 'MMM dd' } }, 
+                        ticks: { color: '#9ca3af', maxRotation: 0, autoSkip: true, autoSkipPadding: 30 }, 
+                        grid: { color: styling.gridColor || '#374151' } 
+                    }, 
+                    y: { 
+                        beginAtZero: false, 
+                        ticks: { color: '#9ca3af' }, 
+                        grid: { display: true, color: styling.gridColor || '#374151' } 
+                    } 
                 }, 
                 plugins: { 
                     legend: { position: 'top', labels: { color: '#d1d5db' } }, 
@@ -269,7 +282,6 @@ export const graph = {
         this.updateHistoryDisplay();
     },
 
-    // --- NEW FUNCTIONS for Stats and Table ---
     updateHistoryDisplay() {
         if (!this.mainChart || !this.elements.statsContainer || !this.elements.historyTableBody) return;
 
@@ -283,7 +295,6 @@ export const graph = {
         visibleDatasets.forEach(dataset => {
             const dataInRange = dataset.data.filter(p => p.x >= visibleMin && p.x <= visibleMax);
             if (dataInRange.length === 0) {
-                // Render a placeholder stats card
                 const placeholderCard = document.createElement('div');
                 placeholderCard.className = 'bg-gray-800 p-4 rounded-lg';
                 placeholderCard.innerHTML = `
@@ -318,12 +329,10 @@ export const graph = {
             });
         });
 
-        // --- FIX START ---
-        // Populate Table Headers
         const thead = this.elements.historyTable.querySelector('thead');
-        if (!thead) return; // Defensive check
+        if (!thead) return; 
 
-        thead.innerHTML = ''; // Clear previous headers
+        thead.innerHTML = ''; 
         const headerRow = document.createElement('tr');
         
         let headersHTML = `<th scope="col" class="px-4 py-3">Timestamp</th>`;
@@ -332,10 +341,9 @@ export const graph = {
         });
         headerRow.innerHTML = headersHTML;
         thead.appendChild(headerRow);
-        // --- FIX END ---
 
         const sortedTimestamps = Object.keys(tableData).sort((a, b) => new Date(b) - new Date(a));
-        const latestTimestamps = sortedTimestamps.slice(0, 200); // Limit to latest 200 for performance
+        const latestTimestamps = sortedTimestamps.slice(0, 200); 
 
         latestTimestamps.forEach(ts => {
             const rowData = tableData[ts];

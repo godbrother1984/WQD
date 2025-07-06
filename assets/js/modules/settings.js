@@ -19,10 +19,6 @@ export const settings = {
         mainBgColorInput: document.getElementById('settings-main-bg-color'),
         headerCaptionFontsizeInput: document.getElementById('settings-header-caption-fontsize'),
         headerSubcaptionFontsizeInput: document.getElementById('settings-header-subcaption-fontsize'),
-        marginTopInput: document.getElementById('settings-margin-top'),
-        marginRightInput: document.getElementById('settings-margin-right'),
-        marginBottomInput: document.getElementById('settings-margin-bottom'),
-        marginLeftInput: document.getElementById('settings-margin-left'),
         showLogoCheckbox: document.getElementById('settings-show-logo'),
         logoPickerContainer: document.getElementById('logo-picker-container'),
         headerBgPickerContainer: document.getElementById('header-bg-picker-container'),
@@ -32,17 +28,13 @@ export const settings = {
         rotationEnabledCheckbox: document.getElementById('settings-rotation-enabled'),
         rotationList: document.getElementById('settings-rotation-list'),
         barColorInput: document.getElementById('settings-bar-color'),
-        gridColorInput: document.getElementById('settings-grid-color'),
-        gridWidthInput: document.getElementById('settings-grid-width'),
         barRangeTextColorInput: document.getElementById('settings-bar-range-text-color'),
         barLabelTextColorInput: document.getElementById('settings-bar-label-text-color'),
         barValueTextColorInput: document.getElementById('settings-bar-value-text-color'),
         barUnitTextColorInput: document.getElementById('settings-bar-unit-text-color'),
         barRangeFontSizeInput: document.getElementById('settings-bar-range-font-size'),
-        barRangeFontWeightInput: document.getElementById('settings-bar-range-font-weight'),
         barLabelFontSizeInput: document.getElementById('settings-bar-label-font-size'),
         barValueFontSizeInput: document.getElementById('settings-bar-value-font-size'),
-        barValueFontWeightInput: document.getElementById('settings-bar-value-font-weight'),
         barUnitFontSizeInput: document.getElementById('settings-bar-unit-font-size'),
         modeKeyInput: document.getElementById('settings-mode-key'),
         modeValuesContainer: document.getElementById('settings-mode-values'),
@@ -64,7 +56,6 @@ export const settings = {
         cancelRestoreBtn: document.getElementById('cancel-restore-btn'),
         changePinBtn: document.getElementById('settings-change-pin-btn'),
     },
-
     _initializeDashboardCallback: null,
 
     updateStorageEstimate() {
@@ -267,26 +258,11 @@ export const settings = {
         xhr.open('POST', 'api/upload_handler.php', true);
         xhr.send(formData);
     },
-
-    // THIS IS THE ORIGINAL, PROBLEMATIC FUNCTION. WE WILL NOT USE IT.
-    // async getImagePickerValue(containerEl) {
-    //     const hiddenUrlInput = containerEl.querySelector('.final-media-url');
-    //     if (!hiddenUrlInput) return { type: 'url', value: '' };
-    //     return { type: 'url', value: hiddenUrlInput.value };
-    // },
     
-    // THIS IS THE REPLACEMENT FUNCTION THAT WILL BE USED INSTEAD.
-    /**
-     * Gets the final URL from an image picker for saving. This is the core of the fix.
-     * @param {HTMLElement} container - The picker's container element.
-     * @returns {Promise<{type: string, value: string}>} A promise that resolves with the object to be saved.
-     */
     async getFinalImagePickerValue(container) {
         const fileInput = container.querySelector('.image-picker-input-file');
         const urlInput = container.querySelector('.image-picker-input-url');
-        const hiddenUrlInput = container.querySelector('.final-media-url');
         
-        // If a new file was selected, upload it first.
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const formData = new FormData();
@@ -295,23 +271,19 @@ export const settings = {
                 const response = await fetch('api/upload_handler.php', { method: 'POST', body: formData });
                 const result = await response.json();
                 if (result.success && result.url) {
-                    return { type: 'url', value: result.url }; // On success, return the new URL.
+                    return { type: 'url', value: result.url };
                 } else {
                     console.error('File upload failed on server:', result.error);
-                    // Fallback: If upload fails, try to return the URL from the text input to avoid data loss.
                     return { type: 'url', value: urlInput.value };
                 }
             } catch (error) {
                 console.error('Upload request failed:', error);
-                return { type: 'url', value: urlInput.value }; // Fallback on network error.
+                return { type: 'url', value: urlInput.value };
             }
         }
         
-        // If no new file, simply return the value from the URL text input.
-        // The hidden input should be kept in sync with this by the 'input' event listener.
         return { type: 'url', value: urlInput.value };
     },
-
 
     setImagePickerValue(containerEl, config) {
         if (!config || !containerEl) return;
@@ -374,12 +346,10 @@ export const settings = {
         const newConfig = { 
             pinHash: currentConfig.pinHash,
             
-            // ** MODIFIED TO USE THE NEW FUNCTION **
             logo: await this.getFinalImagePickerValue(this.elements.logoPickerContainer),
             headerBackground: await this.getFinalImagePickerValue(this.elements.headerBgPickerContainer),
             mainBackground: await this.getFinalImagePickerValue(this.elements.mainBgPickerContainer),
             
-            // Your original code for other settings
             apiUrl: this.elements.apiUrlInput.value.trim(),
             interval: parseInt(this.elements.intervalInput.value, 10) || 30,
             retentionHours: parseInt(this.elements.retentionInput.value, 10) || 48,
@@ -389,17 +359,32 @@ export const settings = {
             headerSubcaptionFontSize: parseInt(this.elements.headerSubcaptionFontsizeInput.value, 10),
             headerBackgroundColor: this.elements.headerBgColorInput.value,
             mainBackgroundColor: this.elements.mainBgColorInput.value,
-            dashboardMargins: {
-                top: parseInt(this.elements.marginTopInput.value, 10) || 0,
-                right: parseInt(this.elements.marginRightInput.value, 10) || 0,
-                bottom: parseInt(this.elements.marginBottomInput.value, 10) || 0,
-                left: parseInt(this.elements.marginLeftInput.value, 10) || 0,
+            dashboardPadding: {
+                top: document.getElementById('settings-padding-top')?.value || '20',
+                right: document.getElementById('settings-padding-right')?.value || '150',
+                bottom: document.getElementById('settings-padding-bottom')?.value || '100',
+                left: document.getElementById('settings-padding-left')?.value || '150',
             },
             showLogo: this.elements.showLogoCheckbox.checked,
             showHeaderBg: this.elements.showHeaderBgCheckbox.checked,
             showMainBg: this.elements.showMainBgCheckbox.checked,
             contentRotation: { enabled: this.elements.rotationEnabledCheckbox.checked, sequence: [] },
-            barChartStyling: { barColor: this.elements.barColorInput.value, rangeTextColor: this.elements.barRangeTextColorInput.value, labelTextColor: this.elements.barLabelTextColorInput.value, valueTextColor: this.elements.barValueTextColorInput.value, unitTextColor: this.elements.barUnitTextColorInput.value, rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10) },
+            barChartStyling: { 
+                barColor: this.elements.barColorInput.value, 
+                rangeTextColor: this.elements.barRangeTextColorInput.value, 
+                labelTextColor: this.elements.barLabelTextColorInput.value, 
+                valueTextColor: this.elements.barValueTextColorInput.value, 
+                unitTextColor: this.elements.barUnitTextColorInput.value, 
+                rangeFontSize: parseInt(this.elements.barRangeFontSizeInput.value, 10), 
+                labelFontSize: parseInt(this.elements.barLabelFontSizeInput.value, 10), 
+                valueFontSize: parseInt(this.elements.barValueFontSizeInput.value, 10), 
+                unitFontSize: parseInt(this.elements.barUnitFontSizeInput.value, 10),
+                gridColor: document.getElementById('settings-grid-color')?.value || '#374151',
+                gridLineWidth: parseInt(document.getElementById('settings-grid-linewidth')?.value, 10) || 1,
+                valueFontWeight: document.getElementById('settings-value-font-weight')?.value || 'bold',
+                rangeFontWeight: document.getElementById('settings-range-font-weight')?.value || 'normal',
+                unitFontWeight: document.getElementById('settings-unit-font-weight')?.value || 'normal',
+            },
             modeStatusKey: this.elements.modeKeyInput.value.trim(),
             operationModes: [],
             params: [] 
@@ -438,17 +423,18 @@ export const settings = {
         this.elements.headerSubcaptionFontsizeInput.value = config.headerSubcaptionFontSize || 18;
         this.elements.headerBgColorInput.value = config.headerBackgroundColor || '#1f2937';
         this.elements.mainBgColorInput.value = config.mainBackgroundColor || '#000000';
-        if (config.dashboardMargins) {
-            this.elements.marginTopInput.value = config.dashboardMargins.top;
-            this.elements.marginRightInput.value = config.dashboardMargins.right;
-            this.elements.marginBottomInput.value = config.dashboardMargins.bottom;
-            this.elements.marginLeftInput.value = config.dashboardMargins.left;
+        
+        if (config.dashboardPadding) {
+            document.getElementById('settings-padding-top').value = config.dashboardPadding.top || '20';
+            document.getElementById('settings-padding-right').value = config.dashboardPadding.right || '150';
+            document.getElementById('settings-padding-bottom').value = config.dashboardPadding.bottom || '100';
+            document.getElementById('settings-padding-left').value = config.dashboardPadding.left || '150';
         }
+        
         this.elements.showLogoCheckbox.checked = config.showLogo ?? true;
         this.elements.showHeaderBgCheckbox.checked = config.showHeaderBg ?? true;
         this.elements.showMainBgCheckbox.checked = config.showMainBg ?? true;
         
-        // ** MODIFIED TO USE THE NEW UI AND LOGIC **
         this.createImagePicker(this.elements.logoPickerContainer, "logo", "image");
         this.setImagePickerValue(this.elements.logoPickerContainer, config.logo);
         this.createImagePicker(this.elements.headerBgPickerContainer, "headerBg", "image");
@@ -487,6 +473,18 @@ export const settings = {
             this.elements.barLabelFontSizeInput.value = styling.labelFontSize || 18;
             this.elements.barValueFontSizeInput.value = styling.valueFontSize || 18;
             this.elements.barUnitFontSizeInput.value = styling.unitFontSize || 18;
+            
+            const gridColorEl = document.getElementById('settings-grid-color');
+            const gridLineWidthEl = document.getElementById('settings-grid-linewidth');
+            const valueFontWeightEl = document.getElementById('settings-value-font-weight');
+            const rangeFontWeightEl = document.getElementById('settings-range-font-weight');
+            const unitFontWeightEl = document.getElementById('settings-unit-font-weight');
+
+            if (gridColorEl) gridColorEl.value = styling.gridColor || '#374151';
+            if (gridLineWidthEl) gridLineWidthEl.value = styling.gridLineWidth || 1;
+            if (valueFontWeightEl) valueFontWeightEl.value = styling.valueFontWeight || 'bold';
+            if (rangeFontWeightEl) rangeFontWeightEl.value = styling.rangeFontWeight || 'normal';
+            if (unitFontWeightEl) unitFontWeightEl.value = styling.unitFontWeight || 'normal';
         }
         this.updateStorageEstimate();
         state.setSettingsChanged(false);
@@ -515,7 +513,6 @@ export const settings = {
             this.elements.feedback.textContent = 'Settings saved successfully!';
             state.setSettingsChanged(false);
             
-            // Re-populate the form to update the UI and the data attributes
             this.applyConfigToUI(newConfig);
             
             setTimeout(() => { this.elements.feedback.textContent = ''; }, 4000);
@@ -636,10 +633,14 @@ export const settings = {
     init(initializeDashboardCallback) {
         this._initializeDashboardCallback = initializeDashboardCallback;
 
+        // Note: The selector `.settings-input` in `index.php` should be applied to all relevant inputs
         const inputFieldClasses = "w-full bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 disabled:bg-gray-400 focus:ring-1 focus:border-indigo-500";
         document.querySelectorAll(".settings-input").forEach(el => {
-            if (el.type !== "file" && el.type !== "color") el.className = inputFieldClasses
+            if (el.type !== "file" && el.type !== "color") {
+                 el.className = inputFieldClasses
+            }
         });
+
         this.initDragAndDrop("#settings-parameter-list", ".parameter-row");
         this.initDragAndDrop("#settings-rotation-list", ".rotation-row");
         const estimateListener = () => this.updateStorageEstimate();
