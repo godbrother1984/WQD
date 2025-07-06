@@ -134,7 +134,7 @@ export const dashboard = {
         const { 
             logo, mainBackground, headerBackground, operationModes, 
             headerCaption, headerSubCaption, headerBackgroundColor, mainBackgroundColor, barChartStyling,
-            showLogo, showHeaderBg, showMainBg, headerCaptionFontSize, headerSubcaptionFontSize
+            showLogo, showHeaderBg, showMainBg, headerCaptionFontSize, headerSubcaptionFontSize, dashboardMargins
         } = currentConfig;
         
         this.elements.logo.style.display = showLogo ? 'block' : 'none';
@@ -143,6 +143,11 @@ export const dashboard = {
         this.elements.header.style.backgroundImage = (showHeaderBg && headerBackground && headerBackground.value) ? `url('${headerBackground.value}')` : 'none';
         document.body.style.backgroundColor = mainBackgroundColor;
         this.elements.mainContainer.style.backgroundImage = (showMainBg && mainBackground && mainBackground.value) ? `url('${mainBackground.value}')` : 'none';
+
+        if (this.elements.mainContainer && dashboardMargins) {
+            const parentContainer = this.elements.mainContainer.parentElement;
+            parentContainer.style.padding = `${dashboardMargins.top}px ${dashboardMargins.right}px ${dashboardMargins.bottom}px ${dashboardMargins.left}px`;
+        }
         
         this.elements.headerCaption.textContent = headerCaption;
         this.elements.headerSubCaption.textContent = headerSubCaption;

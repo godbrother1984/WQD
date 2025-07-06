@@ -6,6 +6,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../data/php_error.log');
 
 // --- การตั้งค่าหลัก ---
+define('MAX_RETENTION_DAYS', 30); // Max history files retention in days
 $settings_file = __DIR__ . '/../data/settings.json';
 $data_directory = __DIR__ . '/../data/';
 $file_prefix = 'graph_history_';
@@ -19,9 +20,38 @@ function send_json_response($data, $status_code = 200) {
     exit;
 }
 
+/**
+ * Deletes history files older than MAX_RETENTION_DAYS.
+ * Note: This compares the file's month to the cutoff month.
+ */
+function cleanup_old_history_files($data_dir, $prefix, $ext) {
+    $files = glob($data_dir . $prefix . '*' . $ext);
+    // Cutoff date based on the start of the month, X days ago.
+    $cutoff_date_str = date('Y-m-01', strtotime('-' . MAX_RETENTION_DAYS . ' days'));
+    $cutoff_timestamp = strtotime($cutoff_date_str);
+
+    foreach ($files as $file) {
+        if (!is_file($file)) continue;
+
+        // Extract YYYY-MM from filename
+        $filename = basename($file, $ext);
+        $date_part = str_replace($prefix, '', $filename);
+        
+        // Check if the file's month is older than the cutoff month
+        $file_timestamp = strtotime($date_part . '-01');
+        
+        if ($file_timestamp < $cutoff_timestamp) {
+            @unlink($file);
+        }
+    }
+}
+
+
 // --- การทำงานหลัก ---
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
+        // Clean up old files before serving data
+        cleanup_old_history_files($data_directory, $file_prefix, $file_extension);
         handle_get_request($data_directory, $settings_file, $file_prefix, $file_extension);
         break;
     case 'POST':
@@ -52,7 +82,7 @@ function handle_get_request($data_dir, $settings_path, $prefix, $ext) {
 
     // หาไฟล์ที่ต้องอ่าน
     $files_to_read = [];
-    for ($i = 0; $i <= ($retention_hours / 24 / 30) + 1; $i++) {
+    for ($i = 0; $i <= ($retention_hours / 24 / 28) + 1; $i++) { // Use 28 for safety with months
         $date_to_check = strtotime("-{$i} month", $now_timestamp);
         $filename = $data_dir . $prefix . date('Y-m', $date_to_check) . $ext;
         if (file_exists($filename)) {
@@ -70,9 +100,9 @@ function handle_get_request($data_dir, $settings_path, $prefix, $ext) {
 
                 $record = json_decode($line, true);
                 if ($record && isset($record['data']['x'])) {
-                    $point_timestamp_ms = strtotime($record['data']['x']) * 1000;
+                    $point_timestamp = strtotime($record['data']['x']);
                     
-                    if ($point_timestamp_ms >= ($cutoff_timestamp * 1000)) {
+                    if ($point_timestamp >= $cutoff_timestamp) {
                         $key = $record['key'];
                         if (!isset($history_data[$key])) {
                             $history_data[$key] = [];
@@ -131,3 +161,4 @@ function handle_post_request($data_dir, $prefix, $ext) {
     
     send_json_response(['error' => 'Invalid action or data provided.'], 400);
 }
+?>

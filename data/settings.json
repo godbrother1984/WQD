@@ -20,6 +20,12 @@
     "headerSubcaptionFontSize": 18,
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
+    "dashboardMargins": {
+        "top": 10,
+        "right": 100,
+        "bottom": 0,
+        "left": 100
+    },
     "showLogo": true,
     "showHeaderBg": true,
     "showMainBg": true,
