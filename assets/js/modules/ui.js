@@ -42,6 +42,15 @@ async function buildChangelog() {
 
 export const ui = {
     showView: async function(viewId) {
+        const mainContentWrapper = document.getElementById('main-content-wrapper');
+
+        // Reset container classes for all non-dashboard views
+        mainContentWrapper.className = 'flex-grow'; // base class
+        if (viewId !== 'dashboard') {
+            mainContentWrapper.classList.add('container', 'mx-auto');
+        }
+
+
         views.forEach(view => view.classList.remove('active'));
         const viewEl = document.getElementById(`view-${viewId}`);
         if(viewEl) viewEl.classList.add('active');
