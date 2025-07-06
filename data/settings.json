@@ -69,7 +69,24 @@
         "unitFontSize": 24
     },
     "modeStatusKey": "operation_mode",
-    "operationModes": [],
+    "operationModes": [
+    {
+        "name": "MEASURING",
+        "value": "1"
+    },
+    {
+        "name": "CALIBRATION",
+        "value": "2"
+    },
+    {
+        "name": "DRAIN",
+        "value": "3"
+    },
+    {
+        "name": "NORMAL",
+        "value": "4"
+    }
+],
     "params": [
         {
             "displayName": "Suspended Solids",
