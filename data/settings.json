@@ -1,15 +1,15 @@
 {
     "logo": {
         "type": "url",
-        "value": "uploads/media_6868211f6efc49.73782671.png"
+        "value": "uploads/media_686a6f829835c9.70152575.png"
     },
     "headerBackground": {
         "type": "url",
-        "value": "uploads/media_68682225208fd8.78544548.png"
+        "value": "uploads/media_686a6f82991c18.16275569.png"
     },
     "mainBackground": {
         "type": "url",
-        "value": "uploads/media_6868222521be55.37659766.png"
+        "value": "uploads/media_686a6f8299ca32.76428926.png"
     },
     "apiUrl": "https://ars.coilinter.com/mqtt/Advantech..74FE4895EFE7..data.txt",
     "interval": 30,
@@ -21,10 +21,10 @@
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
     "dashboardMargins": {
-        "top": 10,
-        "right": 100,
-        "bottom": 0,
-        "left": 100
+        "top": 0,
+        "right": 0,
+        "bottom": 50,
+        "left": 0
     },
     "showLogo": true,
     "showHeaderBg": true,
@@ -43,7 +43,7 @@
                 "duration": 15,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_68683066af5651.04430214.mp4"
+                    "value": "uploads/media_686a6f829e4426.56897359.mp4"
                 }
             },
             {
@@ -52,7 +52,7 @@
                 "duration": 5,
                 "source": {
                     "type": "url",
-                    "value": "uploads/media_68683066ab9e04.97098542.png"
+                    "value": "uploads/media_686a6f829af684.14741333.png"
                 }
             }
         ]

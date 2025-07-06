@@ -1,20 +1,42 @@
 /* คัดลอกเนื้อหา CSS ทั้งหมดจากแท็ก <style> ในไฟล์ home.html เดิมมาวางที่นี่ */
-body { font-family: 'Inter', sans-serif; background: #000000; transition: background-color 0.5s; }
+html, body { 
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', sans-serif; 
+    background: #000000; 
+    transition: background-color 0.5s; 
+    overflow: hidden; /* Prevent scrollbars on the body */
+}
+body > div { /* Target the main wrapper div */
+    height: calc(100vh - 72px); /* Full viewport height minus nav */
+    overflow-y: auto; /* Allow scrolling within the main content area */
+}
+
 nav { 
     transform: translateY(-100%);
     transition: transform 0.3s ease-in-out;
+    height: 72px; /* Set a fixed height for nav */
+    flex-shrink: 0; /* Prevent nav from shrinking */
 }
 nav.visible {
     transform: translateY(0);
 }
 .nav-btn { background-color: #1f2937; color: #d1d5db; transition: all 0.2s ease-in-out; }
 .nav-btn.active { background-color: #facc15; color: #111827; font-weight: bold; }
-.view { display: none; }
-.view.active { display: block; animation: fadeIn 0.5s; }
+
+.view { 
+    display: none; 
+    height: 100%; /* Make views take full height of their container */
+}
+.view.active { 
+    display: flex; /* Use flex for all active views */
+    flex-direction: column;
+    animation: fadeIn 0.5s; 
+}
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* NEW HMI STYLES */
-.dashboard-background {
+#view-dashboard {
     background-size: cover;
     background-position: center;
     position: relative;
@@ -30,7 +52,30 @@ nav.visible {
 .dashboard-content {
     position: relative;
     z-index: 2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure content fills the view */
 }
+
+.dashboard-content > main {
+    flex-grow: 1; /* Allow main content to take up remaining space */
+    display: flex;
+    flex-direction: column;
+}
+#dashboard-graph-content {
+    flex-grow: 1; /* Allow graph to expand */
+    position: relative; /* Needed for Chart.js responsive behavior */
+}
+canvas#dashboardBarChart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
 .status-light {
     width: 16px;
     height: 16px;
@@ -198,6 +243,7 @@ nav.visible {
 }
  .dashboard-main-content.active {
     display: block;
+    height: 100%;
     animation: fadeIn 0.5s;
 }
 #dashboard-video, #dashboard-image, #dashboard-youtube-iframe {

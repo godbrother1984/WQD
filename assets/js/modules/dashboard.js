@@ -141,12 +141,14 @@ export const dashboard = {
         this.elements.logo.src = (logo && logo.value) || 'https://placehold.co/200x200/transparent/white?text=Logo';
         this.elements.header.style.backgroundColor = headerBackgroundColor;
         this.elements.header.style.backgroundImage = (showHeaderBg && headerBackground && headerBackground.value) ? `url('${headerBackground.value}')` : 'none';
-        document.body.style.backgroundColor = mainBackgroundColor;
+        
+        // Apply background to body, not mainContainer for full screen effect
+        document.body.style.backgroundColor = mainBackgroundColor; 
+        
         this.elements.mainContainer.style.backgroundImage = (showMainBg && mainBackground && mainBackground.value) ? `url('${mainBackground.value}')` : 'none';
 
         if (this.elements.mainContainer && dashboardMargins) {
-            const parentContainer = this.elements.mainContainer.parentElement;
-            parentContainer.style.padding = `${dashboardMargins.top}px ${dashboardMargins.right}px ${dashboardMargins.bottom}px ${dashboardMargins.left}px`;
+            this.elements.mainContainer.style.padding = `${dashboardMargins.top}px ${dashboardMargins.right}px ${dashboardMargins.bottom}px ${dashboardMargins.left}px`;
         }
         
         this.elements.headerCaption.textContent = headerCaption;
