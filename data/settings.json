@@ -21,10 +21,10 @@
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
     "dashboardPadding": {
-        "top": "10",
-        "right": "10",
-        "bottom": "10",
-        "left": "10"
+        "top": "0",
+        "right": "0",
+        "bottom": "5",
+        "left": "0"
     },
     "showLogo": true,
     "showHeaderBg": false,

@@ -9,11 +9,11 @@
     "headerSubcaptionFontSize": 18,
     "headerBackgroundColor": "#1f2937",
     "mainBackgroundColor": "#000000",
-    "dashboardMargins": {
-        "top": 16,
-        "right": 16,
-        "bottom": 16,
-        "left": 16
+    "dashboardPadding": {
+        "top": 10,
+        "right": 10,
+        "bottom": 10,
+        "left": 10
     },
     "showLogo": true,
     "showHeaderBg": true,
