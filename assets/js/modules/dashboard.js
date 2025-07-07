@@ -13,7 +13,8 @@ export const dashboard = {
     _cacheElements() {
         this.elements = { 
             mainContainer: document.getElementById('view-dashboard'),
-            dashboardContent: document.querySelector('#view-dashboard .dashboard-content'),
+            // FIX: Target the new main area for padding application
+            mainArea: document.querySelector('#view-dashboard .dashboard-main-area'),
             header: document.getElementById('dashboard-header'),
             logo: document.getElementById('dashboard-logo'),
             headerCaption: document.getElementById('header-caption'),
@@ -169,8 +170,12 @@ export const dashboard = {
             showLogo, showHeaderBg, showMainBg, headerCaptionFontSize, headerSubcaptionFontSize, dashboardPadding
         } = currentConfig;
 
-        if (this.elements.dashboardContent && dashboardPadding) {
-            this.elements.dashboardContent.style.padding = `${dashboardPadding.top}px ${dashboardPadding.right}px ${dashboardPadding.bottom}px ${dashboardPadding.left}px`;
+        // FIX: Apply padding to the new main content area for correct spacing
+        if (this.elements.mainArea && dashboardPadding) {
+            this.elements.mainArea.style.paddingTop = `${dashboardPadding.top}%`;
+            this.elements.mainArea.style.paddingRight = `${dashboardPadding.right}%`;
+            this.elements.mainArea.style.paddingBottom = `${dashboardPadding.bottom}%`;
+            this.elements.mainArea.style.paddingLeft = `${dashboardPadding.left}%`;
         }
         
         this.elements.logo.style.display = showLogo ? 'block' : 'none';
@@ -212,7 +217,6 @@ export const dashboard = {
         const valueParams = currentConfig.params.filter(p => p.type === 'value');
         const styling = currentConfig.barChartStyling;
 
-        // Re-apply dynamic styles before updating chart
         if (this.barChart.options.scales.x.ticks.font) {
             this.barChart.options.scales.x.ticks.font.weight = styling.valueFontWeight || 'bold';
             this.barChart.options.scales.x.ticks.color = styling.labelTextColor || 'white';
