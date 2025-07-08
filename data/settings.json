@@ -22,9 +22,9 @@
     "mainBackgroundColor": "#000000",
     "dashboardPadding": {
         "top": "0",
-        "right": "0",
+        "right": "15",
         "bottom": "5",
-        "left": "0"
+        "left": "15"
     },
     "showLogo": true,
     "showHeaderBg": false,
