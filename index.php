@@ -42,15 +42,15 @@
                             </div>
                         </div>
                     </header>
-                     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                         <div id="operation-mode-container" class="bg-gray-800 bg-opacity-70 p-3 my-4 rounded-lg border border-gray-600 flex justify-center items-center gap-6">
-                            <h3 class="text-white font-bold">OPERATION MODE</h3>
-                            <div id="operation-mode-lights" class="flex gap-4"></div>
-                        </div>
-                     </div>
                 </div>
                 <div class="dashboard-main-area">
-                    <main class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="w-full">
+                         <div id="operation-mode-container" class="bg-gray-800 bg-opacity-70 p-3 my-4 rounded-lg border border-gray-600 flex justify-center items-center gap-6">
+                            <h3 class="text-white font-bold">OPERATION MODE</h3>
+                           <div id="operation-mode-lights" class="flex gap-4"></div>
+                        </div>
+                    </div>
+                    <main class="w-full">
                         <div id="dashboard-graph-content" class="dashboard-main-content active">
                             <canvas id="dashboardBarChart"></canvas>
                         </div>
@@ -64,7 +64,7 @@
                             <iframe id="dashboard-youtube-iframe" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     </main>
-                    <footer class="container mx-auto px-4 sm:px-6 lg:px-8 mt-auto">
+                    <footer class="w-full">
                         <div id="dashboard-values-container" class="flex justify-around text-white text-center py-2"></div>
                     </footer>
                 </div>

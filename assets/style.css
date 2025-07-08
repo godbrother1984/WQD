@@ -12,7 +12,7 @@ body {
     /* FIX: Set body as the main flex container with top padding for the nav */
     display: flex;
     flex-direction: column;
-    padding-top: 72px; /* This is the height of the nav, pushing all content down */
+    padding-top: 0; /* This is the height of the nav, pushing all content down */
     box-sizing: border-box;
 }
 
