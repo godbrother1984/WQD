@@ -21,31 +21,48 @@ function send_json_response($data, $status_code = 200) {
 }
 
 /**
+ * ฟังก์ชันสำหรับคำนวณสัปดาห์ในรูปแบบ YYYY-WXX
+ * เช่น 2025-W05 สำหรับสัปดาห์ที่ 5 ของปี 2025
+ */
+function get_week_format($timestamp = null) {
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+    return date('Y-\\WW', $timestamp);
+}
+
+/**
  * Deletes history files older than MAX_RETENTION_DAYS.
- * Note: This compares the file's month to the cutoff month.
+ * Note: This compares the file's week to the cutoff week.
  */
 function cleanup_old_history_files($data_dir, $prefix, $ext) {
     $files = glob($data_dir . $prefix . '*' . $ext);
-    // Cutoff date based on the start of the month, X days ago.
-    $cutoff_date_str = date('Y-m-01', strtotime('-' . MAX_RETENTION_DAYS . ' days'));
-    $cutoff_timestamp = strtotime($cutoff_date_str);
+    // Cutoff date based on weeks
+    $cutoff_timestamp = strtotime('-' . MAX_RETENTION_DAYS . ' days');
 
     foreach ($files as $file) {
         if (!is_file($file)) continue;
 
-        // Extract YYYY-MM from filename
+        // Extract YYYY-WXX from filename
         $filename = basename($file, $ext);
         $date_part = str_replace($prefix, '', $filename);
         
-        // Check if the file's month is older than the cutoff month
-        $file_timestamp = strtotime($date_part . '-01');
-        
-        if ($file_timestamp < $cutoff_timestamp) {
-            @unlink($file);
+        // Parse week format YYYY-WXX
+        if (preg_match('/^(\d{4})-W(\d{2})$/', $date_part, $matches)) {
+            $year = intval($matches[1]);
+            $week = intval($matches[2]);
+            
+            // Convert week to timestamp (Monday of that week)
+            $week_timestamp = strtotime("$year-01-01 +".($week-1)." weeks");
+            // Adjust to Monday of the week
+            $week_timestamp = strtotime('monday this week', $week_timestamp);
+            
+            if ($week_timestamp < $cutoff_timestamp) {
+                @unlink($file);
+            }
         }
     }
 }
-
 
 // --- การทำงานหลัก ---
 switch ($_SERVER['REQUEST_METHOD']) {
@@ -63,7 +80,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 }
 
 /**
- * จัดการการอ่านข้อมูลจากไฟล์รายเดือน
+ * จัดการการอ่านข้อมูลจากไฟล์รายสัปดาห์
  */
 function handle_get_request($data_dir, $settings_path, $prefix, $ext) {
     $retention_hours = 48; // ค่า default
@@ -80,11 +97,14 @@ function handle_get_request($data_dir, $settings_path, $prefix, $ext) {
     
     $history_data = [];
 
-    // หาไฟล์ที่ต้องอ่าน
+    // หาไฟล์ที่ต้องอ่าน (รายสัปดาห์)
     $files_to_read = [];
-    for ($i = 0; $i <= ($retention_hours / 24 / 28) + 1; $i++) { // Use 28 for safety with months
-        $date_to_check = strtotime("-{$i} month", $now_timestamp);
-        $filename = $data_dir . $prefix . date('Y-m', $date_to_check) . $ext;
+    $weeks_to_check = ceil($retention_hours / 24 / 7) + 2; // เพิ่ม buffer 2 สัปดาห์
+    
+    for ($i = 0; $i <= $weeks_to_check; $i++) {
+        $date_to_check = strtotime("-{$i} week", $now_timestamp);
+        $week_format = get_week_format($date_to_check);
+        $filename = $data_dir . $prefix . $week_format . $ext;
         if (file_exists($filename)) {
             $files_to_read[] = $filename;
         }
@@ -119,7 +139,7 @@ function handle_get_request($data_dir, $settings_path, $prefix, $ext) {
 }
 
 /**
- * จัดการการเขียนข้อมูลลงไฟล์รายเดือน
+ * จัดการการเขียนข้อมูลลงไฟล์รายสัปดาห์
  */
 function handle_post_request($data_dir, $prefix, $ext) {
     $input_json = file_get_contents('php://input');
@@ -143,7 +163,8 @@ function handle_post_request($data_dir, $prefix, $ext) {
     
     // Action: เพิ่มข้อมูลใหม่
     if (isset($input_data['jsonKey']) && isset($input_data['dataPoint'])) {
-        $current_file = $data_dir . $prefix . date('Y-m') . $ext;
+        // เปลี่ยนจากรายเดือน (Y-m) เป็นรายสัปดาห์ (Y-WXX)
+        $current_file = $data_dir . $prefix . get_week_format() . $ext;
         
         $json_key = $input_data['jsonKey'];
         $data_point = $input_data['dataPoint'];

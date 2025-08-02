@@ -176,17 +176,31 @@
                         <div id="localStorage-warning" class="hidden p-4 text-sm text-yellow-800 rounded-lg bg-yellow-50" role="alert">
                             <span class="font-medium">Browser storage is unavailable!</span> Settings will be temporary.
                         </div>
-                        <div class="pt-6 border-t"><h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Connection & Data Settings<span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">- Data Source URL: The web address (API endpoint) where the dashboard fetches its data.<br>- Refresh every: How often (in seconds) the dashboard should request new data.<br>- Data Retention: How long (in hours) historical data for the line graph should be stored in the browser.</span></span></h3>
-                            <div class="space-y-4">
-                                <div><label for="settings-api-url" class="block text-sm font-medium mb-2">Data Source URL</label><input type="url" id="settings-api-url" class="settings-input"></div>
-                                <div><label for="settings-interval" class="block text-sm font-medium mb-2">Refresh every (seconds)</label><input type="number" id="settings-interval" min="1" class="settings-input"></div>
-                                <div>
-                                    <label for="settings-retention" class="block text-sm font-medium mb-2">Data Retention (hours)</label>
-                                    <input type="number" id="settings-retention" min="1" class="settings-input">
-                                    <p id="storage-estimate" class="text-xs text-gray-500 mt-1 h-4"></p>
-                                </div>
-                            </div>
-                        </div>
+                       <!-- แก้ไข tooltip ใน index.php บรรทัดที่ 308 -->
+<div class="pt-6 border-t">
+    <h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">
+        Connection & Data Settings
+        <span class="tooltip-trigger">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="tooltip-content">
+                - Data Source URL: The web address (API endpoint) where the dashboard fetches its data.<br>
+                - Refresh every: How often (in seconds) the dashboard should request new data.<br>
+                - Data Retention: How far back (in hours) the graph should display historical data from the server.
+            </span>
+        </span>
+    </h3>
+    <div class="space-y-4">
+        <div><label for="settings-api-url" class="block text-sm font-medium mb-2">Data Source URL</label><input type="url" id="settings-api-url" class="settings-input"></div>
+        <div><label for="settings-interval" class="block text-sm font-medium mb-2">Refresh every (seconds)</label><input type="number" id="settings-interval" min="1" class="settings-input"></div>
+        <div>
+            <label for="settings-retention" class="block text-sm font-medium mb-2">Data Retention (hours)</label>
+            <input type="number" id="settings-retention" min="1" class="settings-input">
+            <p id="storage-estimate" class="text-xs text-gray-500 mt-1 h-4"></p>
+        </div>
+    </div>
+</div>
                         <div class="pt-6 border-t">
                             <h3 class="flex items-center text-lg font-semibold text-gray-700 mb-4">Dashboard Appearance
                                 <span class="tooltip-trigger"><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="tooltip-content">Customize the visual elements of the dashboard header and backgrounds. You can toggle the visibility of each image.</span></span>

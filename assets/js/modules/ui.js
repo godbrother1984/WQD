@@ -39,7 +39,6 @@ async function buildChangelog() {
     }
 }
 
-
 export const ui = {
     showView: async function(viewId) {
         const mainContentWrapper = document.getElementById('main-content-wrapper');
@@ -50,13 +49,12 @@ export const ui = {
             mainContentWrapper.classList.add('container', 'mx-auto');
         }
 
-
         views.forEach(view => view.classList.remove('active'));
         const viewEl = document.getElementById(`view-${viewId}`);
         if(viewEl) viewEl.classList.add('active');
 
         navButtons.forEach(btn => btn.classList.remove('active'));
-        const navBtnEl = document.querySelector(`button[data-view="${viewId}`);
+        const navBtnEl = document.querySelector(`button[data-view="${viewId}"]`);
         if(navBtnEl) navBtnEl.classList.add('active');
         
         if (viewId === 'settings') {
@@ -74,6 +72,15 @@ export const ui = {
             } else {
                 await graph.resetView(true);
             }
+            
+            // *** การเปลี่ยนแปลงหลัก: Lazy Load History เมื่อเข้าหน้า Graph ***
+            if (graph.isInitialized && !graph.isHistoryLoaded) {
+                try {
+                    await graph.lazyLoadHistory();
+                } catch (error) {
+                    console.error('Failed to lazy load graph history:', error);
+                }
+            }
         }
 
         if(viewId === 'dashboard') {
@@ -84,12 +91,21 @@ export const ui = {
             }
         }
         
+        // *** แก้ไข: ไม่ให้ nav แสดงตลอดเวลาในหน้า Settings ***
+        // ให้ nav แสดงชั่วคราวเมื่อเข้าหน้า Settings แล้วซ่อนตามปกติ
         if (viewId === 'settings') {
             nav.classList.add('visible');
+            // เพิ่ม timeout เพื่อให้ nav ซ่อนหลังจาก 2 วินาที
+            setTimeout(() => { 
+                if (!nav.matches(':hover')) {
+                    nav.classList.remove('visible'); 
+                }
+            }, 2000);
         } else {
              setTimeout(() => { if (!nav.matches(':hover')) nav.classList.remove('visible'); }, 500);
         }
     },
+    
     handleNavigation: async function(viewId) {
         const currentViewEl = document.querySelector('.view.active');
         if (!currentViewEl) return;
@@ -113,6 +129,7 @@ export const ui = {
             await this.showView(viewId);
         }
     },
+    
     updateClock: function() {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -121,12 +138,14 @@ export const ui = {
         document.querySelectorAll('#status-current-time').forEach(el => el.textContent = timeString);
         document.querySelectorAll('#status-current-date').forEach(el => el.textContent = dateString);
     },
+    
     showUnsavedChangesDialog: function(onConfirm) {
         // Implement your own beautiful modal here later
         if (confirm("You have unsaved changes. Are you sure you want to leave this page?")) {
             onConfirm();
         }
     },
+    
     init: function() {
         navButtons.forEach(btn => btn.addEventListener('click', (e) => this.handleNavigation(e.currentTarget.dataset.view)));
     
@@ -135,17 +154,18 @@ export const ui = {
                 clearTimeout(hideNavTimer);
                 nav.classList.add('visible');
             } else {
-                if (!document.getElementById('view-settings').classList.contains('active') && !nav.matches(':hover')) {
+                // *** แก้ไข: ลบเงื่อนไขที่ป้องกันการซ่อน nav ในหน้า Settings ***
+                if (!nav.matches(':hover')) {
                     clearTimeout(hideNavTimer);
                     hideNavTimer = setTimeout(() => { nav.classList.remove('visible'); }, 500);
                 }
             }
         });
+        
         nav.addEventListener('mouseenter', () => clearTimeout(hideNavTimer));
         nav.addEventListener('mouseleave', () => {
-            if (!document.getElementById('view-settings').classList.contains('active')){
-                 hideNavTimer = setTimeout(() => { nav.classList.remove('visible'); }, 500);
-            }
+            // *** แก้ไข: ลบเงื่อนไขพิเศษสำหรับหน้า Settings ***
+            hideNavTimer = setTimeout(() => { nav.classList.remove('visible'); }, 500);
         });
 
         // Initialize modals
@@ -153,15 +173,34 @@ export const ui = {
         const changelogModal = document.getElementById('changelog-modal');
         const closeChangelogBtn = document.getElementById('close-changelog-btn');
         
-        // **MODIFIED**: Fetch changelog when the button is clicked
-        appVersionBtn.addEventListener('click', () => {
-            buildChangelog();
-            changelogModal.classList.remove('hidden');
-        });
+        // *** เพิ่มการ debug ***
+        if (!appVersionBtn) {
+            console.error('app-version-btn element not found in DOM');
+        } else {
+            console.log('app-version-btn found, setting up event listener');
+        }
         
-        closeChangelogBtn.addEventListener('click', () => changelogModal.classList.add('hidden'));
-        changelogModal.addEventListener('click', (e) => {
-            if (e.target === changelogModal) changelogModal.classList.add('hidden');
-        });
+        if (!changelogModal) {
+            console.error('changelog-modal element not found in DOM');
+        }
+        
+        // **MODIFIED**: Fetch changelog when the button is clicked
+        if (appVersionBtn) {
+            appVersionBtn.addEventListener('click', () => {
+                console.log('Version button clicked, opening changelog');
+                buildChangelog();
+                changelogModal.classList.remove('hidden');
+            });
+        }
+        
+        if (closeChangelogBtn) {
+            closeChangelogBtn.addEventListener('click', () => changelogModal.classList.add('hidden'));
+        }
+        
+        if (changelogModal) {
+            changelogModal.addEventListener('click', (e) => {
+                if (e.target === changelogModal) changelogModal.classList.add('hidden');
+            });
+        }
     }
-}
+};

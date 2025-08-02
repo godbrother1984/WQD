@@ -1,8 +1,19 @@
 {
   "versions": [
     {
-      "version": "2.1.0",
+      "version": "2.2.0",
       "tag": "Current",
+      "notes": [
+        "ปรับปรุงประสิทธิภาพการโหลด Dashboard ด้วยระบบ Lazy Loading",
+        "เปลี่ยนการบันทึกไฟล์ Graph History จากรายเดือนเป็นรายสัปดาห์",
+        "แก้ไข Tooltip ของ Data Retention ให้ถูกต้อง (ข้อมูลเก็บที่เซิร์ฟเวอร์)",
+        "แก้ไขปัญหา Brush Slider ในหน้า Graph History ไม่สามารถเลื่อนออกนอกขอบเขต",
+        "ปรับปรุง Brush Slider ให้ขยายเต็มความกว้างเป็นค่าเริ่มต้น"
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "tag": "",
       "notes": [
         "แก้ไข Layout ของ Dashboard ให้ Responsive และขยายเต็มหน้าจอ",
         "แก้ไขปัญหา Background Image ทับซ้อนกับ Header",

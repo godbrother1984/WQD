@@ -7,6 +7,7 @@ export const graph = {
     brushChart: null, 
     timeRange: { min: 0, max: 0 },
     isInitialized: false,
+    isHistoryLoaded: false, // *** เพิ่มตัวแปรใหม่ ***
 
     _cacheElements() {
         this.elements = { 
@@ -21,6 +22,11 @@ export const graph = {
             historyTableBody: document.getElementById('history-table-body'),
             exportCsvBtn: document.getElementById('export-csv-btn'),
         };
+        
+        // *** เพิ่ม CSS เพื่อป้องกัน brush หลุด ***
+        if (this.elements.brushContainer) {
+            this.elements.brushContainer.style.overflow = 'hidden';
+        }
     },
 
     async init() {
@@ -28,7 +34,8 @@ export const graph = {
         this.initMainChart();
         this.initBrushChart();
         this.initControls();
-        await this.setupControls();
+        // *** เปลี่ยนแปลงหลัก: ใช้ setupControlsWithoutHistory แทน setupControls ***
+        await this.setupControlsWithoutHistory();
         this.isInitialized = true;
     },
 
@@ -45,27 +52,30 @@ export const graph = {
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 
-                    // --- ส่วนที่แก้ไข: ใช้ค่าจาก styling ---
                     x: { 
                         type: 'time', 
                         time: { tooltipFormat: 'PPpp', displayFormats: { hour: 'HH:mm', day: 'MMM dd' } }, 
-                        ticks: { color: '#9ca3af', maxRotation: 0, autoSkip: true, autoSkipPadding: 30 }, 
-                        grid: { color: styling.gridColor || '#374151' } 
-                    }, 
+                        grid: { color: styling.gridColor || 'rgba(107, 114, 128, 0.5)' },
+                        ticks: { color: styling.textColor || '#e5e7eb' },
+                        title: { display: true, text: 'Time', color: styling.textColor || '#e5e7eb' }
+                    },
                     y: { 
-                        beginAtZero: false, 
-                        ticks: { color: '#9ca3af' }, 
-                        grid: { display: true, color: styling.gridColor || '#374151' } 
-                    } 
-                }, 
+                        beginAtZero: true,
+                        grid: { color: styling.gridColor || 'rgba(107, 114, 128, 0.5)' },
+                        ticks: { color: styling.textColor || '#e5e7eb' },
+                        title: { display: true, text: 'Value', color: styling.textColor || '#e5e7eb' }
+                    }
+                },
                 plugins: { 
-                    legend: { position: 'top', labels: { color: '#d1d5db' } }, 
-                    tooltip: { enabled: true, mode: 'index', intersect: false, callbacks: { label: function(c) { let l = c.dataset.label||''; if(l){l+=': '} if(c.parsed.y!==null){l+=c.parsed.y.toFixed(2)} return l; } } }, 
-                    datalabels: { display: false } 
-                }, 
-                animation: false,
-                onHover: (event, chartElement) => {
-                    event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { color: styling.textColor || '#e5e7eb' }
+                    },
+                    datalabels: { display: false }
+                },
+                onHover: (e, elements) => {
+                    e.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                 }
             }
         });
@@ -108,7 +118,15 @@ export const graph = {
     },
 
     initBrushHandlers() {
+        // *** เคลียร์ event listeners เดิมก่อน ***
+        if (this._brushHandlers) {
+            window.removeEventListener("mousemove", this._brushHandlers.handleMouseMove);
+            window.removeEventListener("mouseup", this._brushHandlers.handleMouseUp);
+        }
+
         let isDragging = false, isResizing = null, startX, startLeft, startWidth;
+        const MIN_BRUSH_WIDTH = 20; // ความกว้างขั้นต่ำของ brush
+        
         const handleMouseDown = (e) => {
             startX = e.clientX;
             startLeft = this.elements.brushEl.offsetLeft;
@@ -119,52 +137,128 @@ export const graph = {
                 isDragging = true;
             }
         };
+        
         const handleMouseMove = (e) => {
             if (!isDragging && !isResizing) return;
             e.preventDefault();
             const dx = e.clientX - startX;
             const containerWidth = this.elements.brushContainer.offsetWidth;
+            
+            // *** เพิ่มการตรวจสอบ containerWidth ***
+            if (containerWidth <= 0) return;
+            
             if (isDragging) {
                 let newLeft = startLeft + dx;
+                // *** จำกัดการเลื่อนให้อยู่ในขอบเขต ***
                 newLeft = Math.max(0, Math.min(newLeft, containerWidth - startWidth));
                 this.elements.brushEl.style.left = `${newLeft}px`;
+                this.updateMainChartFromBrush();
+                
             } else if (isResizing === 'left') {
                 let newLeft = startLeft + dx;
                 let newWidth = startWidth - dx;
-                if (newLeft < 0) { newWidth += newLeft; newLeft = 0; }
-                if (newWidth < 20) newWidth = 20;
+                
+                // *** ป้องกันการเลื่อนซ้ายเกินขอบและความกว้างขั้นต่ำ ***
+                newLeft = Math.max(0, newLeft);
+                newWidth = Math.max(MIN_BRUSH_WIDTH, newWidth);
+                
+                // *** ถ้าความกว้างใหม่ทำให้เกินขอบขวา ให้ปรับ newLeft ***
+                if (newLeft + newWidth > containerWidth) {
+                    newLeft = containerWidth - newWidth;
+                }
+                
+                // *** ป้องกันการเลื่อนซ้ายจนเกินขอบ ***
+                if (newLeft < 0) {
+                    newLeft = 0;
+                    newWidth = startLeft + startWidth; // คืนค่าความกว้างเดิม
+                }
+                
                 this.elements.brushEl.style.left = `${newLeft}px`;
                 this.elements.brushEl.style.width = `${newWidth}px`;
+                this.updateMainChartFromBrush();
+                
             } else if (isResizing === 'right') {
                 let newWidth = startWidth + dx;
-                if (startLeft + newWidth > containerWidth) { newWidth = containerWidth - startLeft; }
-                if (newWidth < 20) newWidth = 20;
+                
+                // *** จำกัดความกว้างขั้นต่ำและไม่ให้เกินขอบขวา ***
+                newWidth = Math.max(MIN_BRUSH_WIDTH, newWidth);
+                
+                // *** ป้องกันการขยายเกินขอบขวา ***
+                if (startLeft + newWidth > containerWidth) {
+                    newWidth = containerWidth - startLeft;
+                }
+                
+                // *** ตรวจสอบความกว้างขั้นต่ำอีกครั้ง ***
+                if (newWidth < MIN_BRUSH_WIDTH) {
+                    newWidth = MIN_BRUSH_WIDTH;
+                }
+                
                 this.elements.brushEl.style.width = `${newWidth}px`;
+                this.updateMainChartFromBrush();
             }
-            this.updateMainChartFromBrush();
         };
+        
         const handleMouseUp = () => {
             if(isDragging || isResizing) {
+                // *** ตรวจสอบและแก้ไขขอบเขตสุดท้าย ***
+                const containerWidth = this.elements.brushContainer.offsetWidth;
+                const currentLeft = this.elements.brushEl.offsetLeft;
+                const currentWidth = this.elements.brushEl.offsetWidth;
+                
+                // แก้ไขถ้าเกินขอบขวา
+                if (currentLeft + currentWidth > containerWidth) {
+                    this.elements.brushEl.style.width = `${containerWidth - currentLeft}px`;
+                    this.updateMainChartFromBrush();
+                }
+                
+                // แก้ไขถ้าเกินขอบซ้าย
+                if (currentLeft < 0) {
+                    this.elements.brushEl.style.left = '0px';
+                    this.updateMainChartFromBrush();
+                }
+                
+                // แก้ไขถ้าความกว้างน้อยเกินไป
+                if (this.elements.brushEl.offsetWidth < MIN_BRUSH_WIDTH) {
+                    this.elements.brushEl.style.width = `${MIN_BRUSH_WIDTH}px`;
+                    this.updateMainChartFromBrush();
+                }
+                
                 this.updateHistoryDisplay();
             }
             isDragging = false;
             isResizing = null;
         };
+
+        // *** เก็บ reference ไว้เพื่อ cleanup ***
+        this._brushHandlers = { handleMouseMove, handleMouseUp };
+        
         this.elements.brushContainer.addEventListener("mousedown", handleMouseDown);
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
     },
 
     updateMainChartFromBrush() {
-        if (!this.mainChart) return;
-        const { min, max } = this.timeRange;
-        if (min === 0 || max === 0) return;
+        if (!this.mainChart || !this.brushChart) return;
         const containerWidth = this.elements.brushContainer.offsetWidth;
         const brushLeft = this.elements.brushEl.offsetLeft;
         const brushWidth = this.elements.brushEl.offsetWidth;
-        const totalTimeSpan = max - min;
-        this.mainChart.options.scales.x.min = min + (brushLeft / containerWidth) * totalTimeSpan;
-        this.mainChart.options.scales.x.max = min + ((brushLeft + brushWidth) / containerWidth) * totalTimeSpan;
+        
+        // *** แก้ไข: ใช้ timeRange แทนการคำนวณจาก brushChart data ***
+        if (this.timeRange.min === 0 || this.timeRange.max === 0) {
+            // ถ้าไม่มี timeRange ให้ใช้ข้อมูลจาก brushChart
+            const allData = this.brushChart.data.datasets.flatMap(d => d.data);
+            if (allData.length === 0) return;
+            const times = allData.map(p => new Date(p.x).getTime()).sort((a, b) => a - b);
+            this.timeRange.min = times[0];
+            this.timeRange.max = times[times.length - 1];
+        }
+        
+        const totalTimeSpan = this.timeRange.max - this.timeRange.min;
+        const startRatio = brushLeft / containerWidth;
+        const endRatio = (brushLeft + brushWidth) / containerWidth;
+        
+        this.mainChart.options.scales.x.min = this.timeRange.min + startRatio * totalTimeSpan;
+        this.mainChart.options.scales.x.max = this.timeRange.min + endRatio * totalTimeSpan;
         this.mainChart.update("none");
     },
     
@@ -229,6 +323,64 @@ export const graph = {
         this.updateHistoryDisplay();
     },
 
+    // *** ฟังก์ชันใหม่: setup controls โดยไม่โหลด history ***
+    async setupControlsWithoutHistory() {
+        const currentConfig = state.getConfig();
+        if (!currentConfig.params) return;
+        const params = currentConfig.params.filter(p => p.type === 'value');
+        this.elements.checkboxes.innerHTML = '';
+
+        // *** ไม่โหลด historical data ในขั้นตอนนี้ ***
+        const mainDatasets = [];
+        const brushDatasets = [];
+        params.forEach((p, index) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center';
+            div.innerHTML = `<input id="graph-param-${p.jsonKey}" type="checkbox" value="${p.jsonKey}" class="param-checkbox w-4 h-4" checked><label for="graph-param-${p.jsonKey}" class="ml-2 text-sm text-gray-300">${p.displayName}</label>`;
+            this.elements.checkboxes.appendChild(div);
+
+            const color = CHART_COLORS[index % CHART_COLORS.length];
+            // *** ใช้ array ว่างแทน historical data ***
+            const paramHistory = [];
+            
+            mainDatasets.push({ label: p.displayName, jsonKey: p.jsonKey, data: [...paramHistory], borderColor: color, backgroundColor: color + '33', fill: false, tension: 0.1, pointRadius: 1, borderWidth: 2 });
+            brushDatasets.push({ jsonKey: p.jsonKey, data: [...paramHistory], borderColor: color, backgroundColor: color + '33' });
+        });
+        if (this.mainChart && this.brushChart) {
+            this.mainChart.data.datasets = mainDatasets;
+            this.brushChart.data.datasets = brushDatasets;
+            await this.resetView();
+        }
+    },
+
+    // *** ฟังก์ชันใหม่: lazy load history ***
+    async lazyLoadHistory() {
+        if (this.isHistoryLoaded) return; // ถ้าโหลดแล้ว ไม่ต้องโหลดซ้ำ
+        
+        console.log('Lazy loading graph history...');
+        const historicalData = await this.loadHistoryFromServer();
+        
+        // อัปเดต datasets ด้วยข้อมูล history
+        if (this.mainChart && this.brushChart) {
+            this.mainChart.data.datasets.forEach(dataset => {
+                if (historicalData[dataset.jsonKey]) {
+                    dataset.data = [...historicalData[dataset.jsonKey]];
+                }
+            });
+            
+            this.brushChart.data.datasets.forEach(dataset => {
+                if (historicalData[dataset.jsonKey]) {
+                    dataset.data = [...historicalData[dataset.jsonKey]];
+                }
+            });
+            
+            await this.resetView();
+        }
+        
+        this.isHistoryLoaded = true;
+        console.log('Graph history loaded successfully');
+    },
+
     async setupControls() {
         const currentConfig = state.getConfig();
         if (!currentConfig.params) return;
@@ -256,6 +408,8 @@ export const graph = {
             this.brushChart.data.datasets = brushDatasets;
             await this.resetView();
         }
+        
+        this.isHistoryLoaded = true;
     },
 
     async resetView(forceReload = false) {
@@ -268,99 +422,69 @@ export const graph = {
         const currentConfig = state.getConfig();
         const retentionMs = (currentConfig.retentionHours || 48) * 36e5;
         const now = Date.now();
-        const minTime = now - retentionMs;
-        this.timeRange.min = minTime;
-        this.timeRange.max = now;
-        this.mainChart.options.scales.x.min = minTime;
-        this.mainChart.options.scales.x.max = now;
-        this.brushChart.options.scales.x.min = minTime;
-        this.brushChart.options.scales.x.max = now;
-        this.elements.brushEl.style.left = '0px';
-        this.elements.brushEl.style.width = '100%';
-        this.mainChart.update('none');
-        this.brushChart.update('none');
+        
+        // *** แก้ไข: ตั้งค่า timeRange ก่อนเรียก resetBrush ***
+        this.timeRange = { min: now - retentionMs, max: now };
+        
+        // ตั้งค่า main chart ให้แสดงข้อมูลตามช่วงเวลาที่กำหนด
+        this.mainChart.options.scales.x.min = this.timeRange.min;
+        this.mainChart.options.scales.x.max = this.timeRange.max;
+        
+        this.mainChart.update();
+        this.brushChart.update();
+        
         this.updateHistoryDisplay();
+        this.resetBrush(); // เรียกหลังจากตั้ง timeRange แล้ว
+    },
+
+    resetBrush() {
+        if (!this.elements.brushEl || !this.elements.brushContainer) return;
+        const containerWidth = this.elements.brushContainer.offsetWidth;
+        // *** แก้ไข: ให้ brush ขยายเต็มความกว้างเป็นค่าเริ่มต้น ***
+        const brushWidth = containerWidth; // เปลี่ยนจาก 0.2 เป็น 1 (100%)
+        const brushLeft = 0; // เปลี่ยนจาก 0.8 เป็น 0 (เริ่มจากซ้ายสุด)
+        this.elements.brushEl.style.left = brushLeft + 'px';
+        this.elements.brushEl.style.width = brushWidth + 'px';
+        this.updateMainChartFromBrush();
     },
 
     updateHistoryDisplay() {
-        if (!this.mainChart || !this.elements.statsContainer || !this.elements.historyTableBody) return;
-
-        const { min: visibleMin, max: visibleMax } = this.mainChart.options.scales.x;
-        this.elements.statsContainer.innerHTML = '';
-        this.elements.historyTableBody.innerHTML = '';
-
+        if (!this.elements.statsContainer || !this.elements.historyTableBody) return;
         const visibleDatasets = this.mainChart.data.datasets.filter(ds => !ds.hidden);
-        const tableData = {};
+        const currentConfig = state.getConfig();
+        const visibleParams = currentConfig.params.filter(p => visibleDatasets.some(d => d.jsonKey === p.jsonKey));
         
-        visibleDatasets.forEach(dataset => {
-            const dataInRange = dataset.data.filter(p => p.x >= visibleMin && p.x <= visibleMax);
-            if (dataInRange.length === 0) {
-                const placeholderCard = document.createElement('div');
-                placeholderCard.className = 'bg-gray-800 p-4 rounded-lg';
-                placeholderCard.innerHTML = `
-                    <h3 class="font-bold text-lg" style="color:${dataset.borderColor}">${dataset.label}</h3>
-                    <p class="text-gray-400 text-sm">No data in selected range</p>`;
-                this.elements.statsContainer.appendChild(placeholderCard);
-                return;
-            }
-
-            const values = dataInRange.map(p => p.y);
+        this.elements.statsContainer.innerHTML = visibleParams.map(param => {
+            const dataset = visibleDatasets.find(d => d.jsonKey === param.jsonKey);
+            if (!dataset || dataset.data.length === 0) return `<div class="bg-gray-800 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold">${param.displayName}</h3><p class="text-gray-400">No data</p></div>`;
+            const values = dataset.data.map(p => p.y);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
             const min = Math.min(...values);
             const max = Math.max(...values);
-            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            return `<div class="bg-gray-800 p-4 rounded-lg text-center"><h3 class="text-lg font-semibold">${param.displayName}</h3><p class="text-2xl font-bold">${avg.toFixed(2)} ${param.unit || ''}</p><p class="text-sm text-gray-400">Min: ${min.toFixed(2)} | Max: ${max.toFixed(2)}</p></div>`;
+        }).join('');
 
-            const statCard = document.createElement('div');
-            statCard.className = 'bg-gray-800 p-4 rounded-lg';
-            statCard.innerHTML = `
-                <h3 class="font-bold text-lg truncate" style="color:${dataset.borderColor}" title="${dataset.label}">${dataset.label}</h3>
-                <div class="grid grid-cols-3 gap-2 text-center mt-2">
-                    <div><p class="text-xs text-gray-400">MIN</p><p class="text-base font-semibold">${min.toFixed(2)}</p></div>
-                    <div><p class="text-xs text-gray-400">MAX</p><p class="text-base font-semibold">${max.toFixed(2)}</p></div>
-                    <div><p class="text-xs text-gray-400">AVG</p><p class="text-base font-semibold">${avg.toFixed(2)}</p></div>
-                </div>`;
-            this.elements.statsContainer.appendChild(statCard);
-
-            dataInRange.forEach(point => {
-                const timestamp = point.x.toISOString();
-                if (!tableData[timestamp]) {
-                    tableData[timestamp] = {};
-                }
-                tableData[timestamp][dataset.jsonKey] = point.y;
-            });
+        const tableData = visibleDatasets.flatMap(dataset => dataset.data.map(point => ({ ...point, param: dataset.label, jsonKey: dataset.jsonKey })));
+        tableData.sort((a, b) => new Date(b.x) - new Date(a.x));
+        const recentData = tableData.slice(0, 200);
+        if (recentData.length === 0) {
+            this.elements.historyTableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4">No data available</td></tr>';
+            return;
+        }
+        const headerKeys = [...new Set(recentData.map(d => d.jsonKey))];
+        const headerHtml = '<tr><th class="px-2 py-1 text-left">Time</th>' + headerKeys.map(key => `<th class="px-2 py-1 text-left">${key}</th>`).join('') + '</tr>';
+        this.elements.historyTable.querySelector('thead').innerHTML = headerHtml;
+        const groupedByTime = {};
+        recentData.forEach(point => {
+            const timeKey = new Date(point.x).toISOString().slice(0, 19).replace('T', ' ');
+            if (!groupedByTime[timeKey]) groupedByTime[timeKey] = {};
+            groupedByTime[timeKey][point.jsonKey] = point.y;
         });
-
-        const thead = this.elements.historyTable.querySelector('thead');
-        if (!thead) return; 
-
-        thead.innerHTML = ''; 
-        const headerRow = document.createElement('tr');
-        
-        let headersHTML = `<th scope="col" class="px-4 py-3">Timestamp</th>`;
-        visibleDatasets.forEach(ds => {
-            headersHTML += `<th scope="col" class="px-4 py-3 text-right" style="color:${ds.borderColor}">${ds.label}</th>`;
-        });
-        headerRow.innerHTML = headersHTML;
-        thead.appendChild(headerRow);
-
-        const sortedTimestamps = Object.keys(tableData).sort((a, b) => new Date(b) - new Date(a));
-        const latestTimestamps = sortedTimestamps.slice(0, 200); 
-
-        latestTimestamps.forEach(ts => {
-            const rowData = tableData[ts];
-            const row = document.createElement('tr');
-            row.className = 'border-b border-gray-700 hover:bg-gray-800';
-            const formattedDate = new Date(ts).toLocaleString('th-TH', { 
-                year: 'numeric', month: 'short', day: 'numeric', 
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
-            });
-            row.innerHTML = `<td class="px-4 py-2 font-medium text-gray-300 whitespace-nowrap">${formattedDate}</td>`;
-            
-            visibleDatasets.forEach(ds => {
-                const value = rowData[ds.jsonKey];
-                row.innerHTML += `<td class="px-4 py-2 text-right">${value !== undefined ? value.toFixed(2) : 'N/A'}</td>`;
-            });
-            this.elements.historyTableBody.appendChild(row);
-        });
+        const rowsHtml = Object.entries(groupedByTime).sort(([a], [b]) => b.localeCompare(a)).slice(0, 200).map(([time, values]) => {
+            const cells = headerKeys.map(key => `<td class="px-2 py-1">${values[key] !== undefined ? values[key].toFixed(2) : '-'}</td>`).join('');
+            return `<tr><td class="px-2 py-1">${time}</td>${cells}</tr>`;
+        }).join('');
+        this.elements.historyTableBody.innerHTML = rowsHtml;
     },
 
     exportToCSV() {

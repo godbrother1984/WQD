@@ -320,3 +320,47 @@ nav:not(.visible) {
     z-index: 100;
     background: #000;
 }
+
+#app-version-btn {
+    position: absolute;
+    top: 4rem; /* เปลี่ยนจาก 1rem เป็น 4rem เพื่อให้ต่ำกว่า nav */
+    right: 1rem;
+    z-index: 100; /* เพิ่ม z-index ให้สูงขึ้น */
+    color: #9ca3af !important; /* เปลี่ยนสีให้เห็นชัดขึ้น */
+    font-size: 0.75rem;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#app-version-btn:hover {
+    color: #4b5563 !important; /* สีเมื่อ hover */
+}
+
+#app-version-btn:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* ตรวจสอบให้แน่ใจว่า settings-form-container มี position relative */
+#settings-form-container {
+    position: relative;
+}
+
+/* ปรับให้ส่วนหัวของ Settings ไม่บังปุ่ม */
+#settings-form-container .p-8.pb-4 {
+    position: relative;
+    /* เพิ่ม padding-top เพื่อให้พื้นที่สำหรับปุ่ม */
+    padding-top: 3rem;
+}
+
+/* หรือวางปุ่มใน container ที่ไม่ถูกบังโดย nav */
+@media (max-width: 640px) {
+    #app-version-btn {
+        top: 5rem; /* ในหน้าจอเล็กให้เลื่อนลงมาเพิ่ม */
+        right: 0.5rem;
+        font-size: 0.7rem;
+    }
+}
